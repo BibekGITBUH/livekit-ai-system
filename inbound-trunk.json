@@ -1,0 +1,7 @@
+{
+  "trunk": {
+    "name": "Test-Trunk",
+    "numbers": ["+1234567890", "test-room", "100"],
+    "allowed_addresses": ["0.0.0.0/0"]
+  }
+}

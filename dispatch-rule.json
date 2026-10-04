@@ -1,0 +1,11 @@
+{
+  "dispatch_rule": {
+    "name": "RouteToTestRoom",
+    "trunk_ids": ["ST_tdNkmTj7z2GE"],
+    "rule": {
+      "dispatchRuleDirect": {
+        "roomName": "test-room"
+      }
+    }
+  }
+}
