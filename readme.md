@@ -41,6 +41,59 @@ A real-time voice AI assistant powered by **LiveKit Agents** and **Google Gemini
 
 ---
 
+## 📌 Version Control & Environment Specifications
+
+To ensure consistency and avoid version conflicts during development and deployment, all component, container, and library versions are locked and documented below:
+
+### 1. Docker Images & Container Stack (`docker-compose.yaml`)
+
+To inspect and freeze the pure image versions (avoiding `:latest` drifts), run the following docker commands:
+
+| Service | Tag in Compose | Pure / Pinned Version | Docker Version Check Command | Role & Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **LiveKit Server** | `livekit/livekit-server:latest` | **`v1.13.7`** | `docker run --rm livekit/livekit-server:latest --version` | WebRTC SFU media server (ports 7880, 7881, 50000-50100/udp) |
+| **LiveKit SIP Gateway** | `livekit/sip:latest` | **`v1.17.0`** | `docker run --rm livekit/sip:latest --version` | SIP inbound trunk & dispatch bridge (port 5060, RTP 10000-10050/udp) |
+| **Redis** | `redis:7-alpine` | **`7.4.11-alpine`** | `docker run --rm redis:7-alpine redis-server --version` | Distributed key-value store & pub/sub coordinator |
+| **LiveKit CLI** | `livekit/livekit-cli:latest` | **`v2.18.8`** | `docker run --rm livekit/livekit-cli:latest --version` | CLI tool used for trunk & dispatch rule provisioning |
+| **Compose Spec** | `3.9` | `3.9` | - | Docker Compose schema version |
+
+> **Tip for Production Pinning**: In `docker-compose.yaml`, replace `:latest` with the pure tags (e.g. `livekit/livekit-server:v1.13.7` and `livekit/sip:v1.17.0`) to prevent breaking changes when images update upstream.
+
+### 2. Agent Container Environment (`agent/Dockerfile`)
+| Component | Version / Specification | Details |
+| :--- | :--- | :--- |
+| **Base Docker Image** | `python:3.11-slim` (Pure: **`3.11.17`**) | Check via: `docker run --rm python:3.11-slim python --version` |
+| **Debian Audio & Build Deps**| `gcc`, `build-essential`, `curl`, `ca-certificates`, `portaudio19-dev`, `ffmpeg` | OS-level compilation and audio codecs |
+| **Silero VAD ONNX Binary** | `snakers4/silero-vad` (master branch ONNX) | Placed at `/usr/local/lib/python3.11/site-packages/livekit/plugins/silero/resources/silero_vad.onnx` |
+
+### 3. Python Dependencies (`agent/requirements.txt` & Scripts)
+| Library | Version Constraint | Role in System |
+| :--- | :--- | :--- |
+| **`livekit-agents`** | `>=1.8.0` | LiveKit Multimodal Agents framework (`AgentSession`, `Agent`, `JobContext`, `cli`) |
+| **`livekit-plugins-google`** | `>=1.8.0` | Google Gemini Live Realtime API plugin (`google.realtime.RealtimeModel`) |
+| **`livekit-plugins-silero`** | `>=1.8.0` | Real-time Silero Voice Activity Detection (VAD) |
+| **`python-dotenv`** | Latest (`>=1.0.0`) | `.env` configuration file loader |
+| **`livekit-api`** | Compatible with `livekit-agents` | JWT Token & VideoGrants generator (`generate_token.py`) |
+
+### 4. AI Models & Voice Engine Configuration
+| Parameter | Setting | Usage |
+| :--- | :--- | :--- |
+| **Realtime Model** | `gemini-3.8-live` | Bidirectional real-time voice streaming model in [`agent/agent.py`](agent/agent.py) |
+| **Voice Preset** | `Kore` | Natural conversational voice timbre |
+| **REST Generation Model**| `gemini-flash-latest` (v1beta API) | Endpoint used for curl/API verification |
+
+### 5. Host Development Machine (Verified Baseline)
+| Tool / Runtime | Tested Host Version |
+| :--- | :--- |
+| **Operating System** | Windows 11 (Build 10.0.26200, 64-bit) |
+| **Python** | `3.12.3` (Host) / `pip 26.1.2` |
+| **Docker Engine** | Docker Desktop `29.1.3` (API `1.52`, Build `f52814d`) |
+| **Docker Compose** | `v2.40.3-desktop.1` |
+| **Git** | `2.43.0.windows.1` |
+| **Node.js / npm** | Node `v24.12.0` / npm `9.7.2` |
+
+---
+
 ## 🚀 Quickstart: Run the System
 
 ### Step 1: Clone the Repository
